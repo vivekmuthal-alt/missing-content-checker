@@ -1,71 +1,55 @@
 import { useState } from "react";
 
-/**
- * Strict normalization:
- * - lowercase only
- * - normalize spaces
- * - DO NOT remove bullets or symbols
- */
-const normalizeStrict = (line) => {
-  return line
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-};
-
 export default function ContentCheckPanel() {
   const [docText, setDocText] = useState("");
   const [siteText, setSiteText] = useState("");
   const [results, setResults] = useState([]);
 
+  const normalizeLines = (text) =>
+    text
+      .replace(/\r/g, "")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean);
+
   const compareContent = () => {
-    // Split lines exactly as user pasted
-    const docOriginal = docText
-      .split("\n")
-      .map(l => l.trim())
-      .filter(Boolean);
+    const docOriginal = normalizeLines(docText);
+    const siteOriginal = normalizeLines(siteText);
 
-    const siteOriginal = siteText
-      .split("\n")
-      .map(l => l.trim())
-      .filter(Boolean);
-
-    // Strict normalized versions (for comparison only)
-    const docNormalized = docOriginal.map(normalizeStrict);
-    const siteNormalized = siteOriginal.map(normalizeStrict);
+    const docLower = docOriginal.map(l => l.toLowerCase());
+    const siteLower = siteOriginal.map(l => l.toLowerCase());
 
     const usedSiteIndexes = new Set();
     const comparison = [];
 
-    // 1️⃣ Check document → website
-    docNormalized.forEach((docLine, docIndex) => {
-      const siteIndex = siteNormalized.findIndex(
-        (siteLine, i) => siteLine === docLine && !usedSiteIndexes.has(i)
+    // Check document lines
+    docLower.forEach((line, i) => {
+      const matchIndex = siteLower.findIndex(
+        (s, idx) => s === line && !usedSiteIndexes.has(idx)
       );
 
-      if (siteIndex !== -1) {
-        usedSiteIndexes.add(siteIndex);
-
+      if (matchIndex !== -1) {
+        usedSiteIndexes.add(matchIndex);
         comparison.push({
-          left: docOriginal[docIndex],
-          right: siteOriginal[siteIndex],
+          left: docOriginal[i],
+          right: siteOriginal[matchIndex],
           status: "matched"
         });
       } else {
         comparison.push({
-          left: docOriginal[docIndex],
+          left: docOriginal[i],
           right: "",
           status: "missing"
         });
       }
     });
 
-    // 2️⃣ Extra website content
-    siteNormalized.forEach((_, index) => {
-      if (!usedSiteIndexes.has(index)) {
+    // Extra website lines
+    siteLower.forEach((line, i) => {
+      if (!usedSiteIndexes.has(i)) {
         comparison.push({
           left: "",
-          right: siteOriginal[index],
+          right: siteOriginal[i],
           status: "extra"
         });
       }
@@ -82,50 +66,52 @@ export default function ContentCheckPanel() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Strict Content Check Panel</h2>
+    <div style={{ padding: 20, maxWidth: 1100, margin: "auto" }}>
+      <h2>Content Check Panel (Strict Mode)</h2>
 
       <textarea
-        placeholder="Original Document Content (exact)"
-        rows={6}
+        placeholder="Original Document Content"
+        rows={8}
         value={docText}
-        onChange={e => setDocText(e.target.value)}
-        style={{ width: "100%", marginBottom: 10, padding: 8 }}
+        onChange={(e) => setDocText(e.target.value)}
+        style={{ width: "100%", padding: 10, marginBottom: 12 }}
       />
 
       <textarea
-        placeholder="Website Content (exact copy)"
-        rows={6}
+        placeholder="Website Content (paste exact extracted text)"
+        rows={8}
         value={siteText}
-        onChange={e => setSiteText(e.target.value)}
-        style={{ width: "100%", marginBottom: 10, padding: 8 }}
+        onChange={(e) => setSiteText(e.target.value)}
+        style={{ width: "100%", padding: 10, marginBottom: 12 }}
       />
 
-      <button onClick={compareContent} style={{ padding: "8px 16px" }}>
+      <button onClick={compareContent} style={{ padding: "10px 18px" }}>
         Compare Content
       </button>
 
       {results.length > 0 && (
-        <div style={{ display: "flex", marginTop: 20, fontWeight: "bold" }}>
-          <div style={{ flex: 1 }}>Document</div>
-          <div style={{ flex: 1 }}>Website</div>
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", fontWeight: "bold" }}>
+            <div style={{ flex: 1 }}>Document</div>
+            <div style={{ flex: 1 }}>Website</div>
+          </div>
+
+          {results.map((row, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                background: getColor(row.status),
+                padding: 8,
+                borderBottom: "1px solid #ccc"
+              }}
+            >
+              <div style={{ flex: 1 }}>{row.left}</div>
+              <div style={{ flex: 1 }}>{row.right}</div>
+            </div>
+          ))}
         </div>
       )}
-
-      {results.map((row, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex",
-            background: getColor(row.status),
-            padding: "6px",
-            borderBottom: "1px solid #ccc"
-          }}
-        >
-          <div style={{ flex: 1 }}>{row.left}</div>
-          <div style={{ flex: 1 }}>{row.right}</div>
-        </div>
-      ))}
     </div>
   );
 }
