@@ -1,15 +1,14 @@
 import { useState } from "react";
 
 /**
- * Normalize a line for comparison:
- * - lowercase
- * - remove bullets (-, *, •)
+ * Strict normalization:
+ * - lowercase only
  * - normalize spaces
+ * - DO NOT remove bullets or symbols
  */
-const normalizeLine = (line) => {
+const normalizeStrict = (line) => {
   return line
     .toLowerCase()
-    .replace(/^[\s•\-*]+/, "") // remove bullet symbols at start
     .replace(/\s+/g, " ")
     .trim();
 };
@@ -20,7 +19,7 @@ export default function ContentCheckPanel() {
   const [results, setResults] = useState([]);
 
   const compareContent = () => {
-    // Original lines (for display)
+    // Split lines exactly as user pasted
     const docOriginal = docText
       .split("\n")
       .map(l => l.trim())
@@ -31,37 +30,39 @@ export default function ContentCheckPanel() {
       .map(l => l.trim())
       .filter(Boolean);
 
-    // Normalized lines (for comparison)
-    const docNormalized = docOriginal.map(normalizeLine);
-    const siteNormalized = siteOriginal.map(normalizeLine);
+    // Strict normalized versions (for comparison only)
+    const docNormalized = docOriginal.map(normalizeStrict);
+    const siteNormalized = siteOriginal.map(normalizeStrict);
 
-    const siteSet = new Set(siteNormalized);
-    const docSet = new Set(docNormalized);
-
+    const usedSiteIndexes = new Set();
     const comparison = [];
 
-    // Compare document → website
-    docNormalized.forEach((line, index) => {
-      if (siteSet.has(line)) {
-        const siteIndex = siteNormalized.indexOf(line);
+    // 1️⃣ Check document → website
+    docNormalized.forEach((docLine, docIndex) => {
+      const siteIndex = siteNormalized.findIndex(
+        (siteLine, i) => siteLine === docLine && !usedSiteIndexes.has(i)
+      );
+
+      if (siteIndex !== -1) {
+        usedSiteIndexes.add(siteIndex);
 
         comparison.push({
-          left: docOriginal[index],
+          left: docOriginal[docIndex],
           right: siteOriginal[siteIndex],
           status: "matched"
         });
       } else {
         comparison.push({
-          left: docOriginal[index],
+          left: docOriginal[docIndex],
           right: "",
           status: "missing"
         });
       }
     });
 
-    // Extra website content
-    siteNormalized.forEach((line, index) => {
-      if (!docSet.has(line)) {
+    // 2️⃣ Extra website content
+    siteNormalized.forEach((_, index) => {
+      if (!usedSiteIndexes.has(index)) {
         comparison.push({
           left: "",
           right: siteOriginal[index],
@@ -82,10 +83,10 @@ export default function ContentCheckPanel() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Content Check Panel</h2>
+      <h2>Strict Content Check Panel</h2>
 
       <textarea
-        placeholder="Original Document Content"
+        placeholder="Original Document Content (exact)"
         rows={6}
         value={docText}
         onChange={e => setDocText(e.target.value)}
@@ -93,7 +94,7 @@ export default function ContentCheckPanel() {
       />
 
       <textarea
-        placeholder="Website Content (paste from page)"
+        placeholder="Website Content (exact copy)"
         rows={6}
         value={siteText}
         onChange={e => setSiteText(e.target.value)}
