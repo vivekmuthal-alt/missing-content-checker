@@ -1,47 +1,70 @@
 import { useState } from "react";
 
+/**
+ * Normalize a line for comparison:
+ * - lowercase
+ * - remove bullets (-, *, •)
+ * - normalize spaces
+ */
+const normalizeLine = (line) => {
+  return line
+    .toLowerCase()
+    .replace(/^[\s•\-*]+/, "") // remove bullet symbols at start
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 export default function ContentCheckPanel() {
   const [docText, setDocText] = useState("");
   const [siteText, setSiteText] = useState("");
   const [results, setResults] = useState([]);
 
   const compareContent = () => {
-    // Split lines, trim, remove empty
-    const docLinesOriginal = docText.split("\n").map(l => l.trim()).filter(Boolean);
-    const siteLinesOriginal = siteText.split("\n").map(l => l.trim()).filter(Boolean);
+    // Original lines (for display)
+    const docOriginal = docText
+      .split("\n")
+      .map(l => l.trim())
+      .filter(Boolean);
 
-    // Lowercase versions for comparison
-    const docLines = docLinesOriginal.map(l => l.toLowerCase());
-    const siteLines = siteLinesOriginal.map(l => l.toLowerCase());
+    const siteOriginal = siteText
+      .split("\n")
+      .map(l => l.trim())
+      .filter(Boolean);
 
-    const siteSet = new Set(siteLines);
-    const docSet = new Set(docLines);
+    // Normalized lines (for comparison)
+    const docNormalized = docOriginal.map(normalizeLine);
+    const siteNormalized = siteOriginal.map(normalizeLine);
+
+    const siteSet = new Set(siteNormalized);
+    const docSet = new Set(docNormalized);
 
     const comparison = [];
 
-    // Compare document lines
-    docLines.forEach((line, index) => {
+    // Compare document → website
+    docNormalized.forEach((line, index) => {
       if (siteSet.has(line)) {
+        const siteIndex = siteNormalized.indexOf(line);
+
         comparison.push({
-          left: docLinesOriginal[index],   // preserve original text
-          right: siteLinesOriginal[siteLines.findIndex(l => l === line)],
+          left: docOriginal[index],
+          right: siteOriginal[siteIndex],
           status: "matched"
         });
       } else {
         comparison.push({
-          left: docLinesOriginal[index],
+          left: docOriginal[index],
           right: "",
           status: "missing"
         });
       }
     });
 
-    // Check for extra lines in website
-    siteLines.forEach((line, index) => {
+    // Extra website content
+    siteNormalized.forEach((line, index) => {
       if (!docSet.has(line)) {
         comparison.push({
           left: "",
-          right: siteLinesOriginal[index],
+          right: siteOriginal[index],
           status: "extra"
         });
       }
@@ -50,11 +73,10 @@ export default function ContentCheckPanel() {
     setResults(comparison);
   };
 
-  // Background color based on status
-  const getColor = status => {
-    if (status === "matched") return "#d4edda";   // green
-    if (status === "missing") return "#f8d7da";   // red
-    if (status === "extra") return "#fff3cd";     // yellow
+  const getColor = (status) => {
+    if (status === "matched") return "#d4edda"; // green
+    if (status === "missing") return "#f8d7da"; // red
+    if (status === "extra") return "#fff3cd";   // yellow
     return "#fff";
   };
 
@@ -71,7 +93,7 @@ export default function ContentCheckPanel() {
       />
 
       <textarea
-        placeholder="Website Content (paste for now)"
+        placeholder="Website Content (paste from page)"
         rows={6}
         value={siteText}
         onChange={e => setSiteText(e.target.value)}
