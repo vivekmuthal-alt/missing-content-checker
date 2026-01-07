@@ -6,35 +6,55 @@ export default function ContentCheckPanel() {
   const [results, setResults] = useState([]);
 
   const compareContent = () => {
-    const docLines = docText.split("\n").map(l => l.trim()).filter(Boolean);
-    const siteLines = siteText.split("\n").map(l => l.trim()).filter(Boolean);
+    // Split lines, trim, remove empty
+    const docLinesOriginal = docText.split("\n").map(l => l.trim()).filter(Boolean);
+    const siteLinesOriginal = siteText.split("\n").map(l => l.trim()).filter(Boolean);
+
+    // Lowercase versions for comparison
+    const docLines = docLinesOriginal.map(l => l.toLowerCase());
+    const siteLines = siteLinesOriginal.map(l => l.toLowerCase());
 
     const siteSet = new Set(siteLines);
     const docSet = new Set(docLines);
 
     const comparison = [];
 
-    docLines.forEach(line => {
+    // Compare document lines
+    docLines.forEach((line, index) => {
       if (siteSet.has(line)) {
-        comparison.push({ left: line, right: line, status: "matched" });
+        comparison.push({
+          left: docLinesOriginal[index],   // preserve original text
+          right: siteLinesOriginal[siteLines.findIndex(l => l === line)],
+          status: "matched"
+        });
       } else {
-        comparison.push({ left: line, right: "", status: "missing" });
+        comparison.push({
+          left: docLinesOriginal[index],
+          right: "",
+          status: "missing"
+        });
       }
     });
 
-    siteLines.forEach(line => {
+    // Check for extra lines in website
+    siteLines.forEach((line, index) => {
       if (!docSet.has(line)) {
-        comparison.push({ left: "", right: line, status: "extra" });
+        comparison.push({
+          left: "",
+          right: siteLinesOriginal[index],
+          status: "extra"
+        });
       }
     });
 
     setResults(comparison);
   };
 
+  // Background color based on status
   const getColor = status => {
-    if (status === "matched") return "#d4edda";
-    if (status === "missing") return "#f8d7da";
-    if (status === "extra") return "#fff3cd";
+    if (status === "matched") return "#d4edda";   // green
+    if (status === "missing") return "#f8d7da";   // red
+    if (status === "extra") return "#fff3cd";     // yellow
     return "#fff";
   };
 
@@ -47,7 +67,7 @@ export default function ContentCheckPanel() {
         rows={6}
         value={docText}
         onChange={e => setDocText(e.target.value)}
-        style={{ width: "100%", marginBottom: 10 }}
+        style={{ width: "100%", marginBottom: 10, padding: 8 }}
       />
 
       <textarea
@@ -55,15 +75,17 @@ export default function ContentCheckPanel() {
         rows={6}
         value={siteText}
         onChange={e => setSiteText(e.target.value)}
-        style={{ width: "100%", marginBottom: 10 }}
+        style={{ width: "100%", marginBottom: 10, padding: 8 }}
       />
 
-      <button onClick={compareContent}>Compare Content</button>
+      <button onClick={compareContent} style={{ padding: "8px 16px" }}>
+        Compare Content
+      </button>
 
       {results.length > 0 && (
-        <div style={{ display: "flex", marginTop: 20 }}>
-          <div style={{ flex: 1, fontWeight: "bold" }}>Document</div>
-          <div style={{ flex: 1, fontWeight: "bold" }}>Website</div>
+        <div style={{ display: "flex", marginTop: 20, fontWeight: "bold" }}>
+          <div style={{ flex: 1 }}>Document</div>
+          <div style={{ flex: 1 }}>Website</div>
         </div>
       )}
 
