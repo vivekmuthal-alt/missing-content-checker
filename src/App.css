@@ -1,32 +1,94 @@
-.App {
-  text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h4 {
+  color: #667eea;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+textarea, input {
+  border-radius: 8px !important;
+  border: 2px solid #e0e0e0 !important;
+  transition: border-color 0.3s ease !important;
+}
+
+textarea:focus, input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.2) !important;
+}
+
+.btn {
+  border-radius: 8px;
+  padding: 10px 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-warning:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
 }
+
+label {
+  color: #333;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.border-danger {
+  border-color: #ff6b6b !important;
+}
+
 
 @keyframes App-logo-spin {
   from {
