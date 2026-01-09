@@ -16,14 +16,14 @@ export default function ContentCheckPanel() {
   };
 
   return (
-    <div className="card p-3 mb-4">
-      <h4>Content Correction Panel</h4>
+    <div style={{ border: "1px solid #ccc", padding: "20px", borderRadius: "8px", marginBottom: "20px", backgroundColor: "#fff" }}>
+      <h2 style={{ marginBottom: "20px" }}>Content Correction Panel</h2>
 
-      <div className="row">
-        <div className="col-md-6">
+      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+        <div style={{ flex: 1 }}>
           <label><strong>Reference Content (Doc)</strong></label>
           <textarea
-            className="form-control mb-2"
+            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ddd", fontFamily: "Arial", marginTop: "10px", marginBottom: "10px" }}
             rows="5"
             placeholder="Paste Doc Content"
             value={docText}
@@ -31,10 +31,10 @@ export default function ContentCheckPanel() {
           />
         </div>
 
-        <div className="col-md-6">
+        <div style={{ flex: 1 }}>
           <label><strong>Website Content</strong></label>
           <textarea
-            className="form-control mb-2"
+            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ddd", fontFamily: "Arial", marginTop: "10px", marginBottom: "10px" }}
             rows="5"
             placeholder="Paste Website Content"
             value={siteText}
@@ -43,14 +43,14 @@ export default function ContentCheckPanel() {
         </div>
       </div>
 
-      <button className="btn btn-primary mb-3" onClick={handleCheck}>
+      <button style={{ padding: "10px 20px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", marginBottom: "20px" }} onClick={handleCheck}>
         Check Content
       </button>
 
       {matched.length > 0 && (
-        <div className="mb-3">
+        <div style={{ marginBottom: "20px" }}>
           <label><strong>✅ Matched Content:</strong></label>
-          <div className="p-2 bg-light border rounded">
+          <div style={{ padding: "10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px" }}>
             {matched.map((line, i) => (
               <div key={i} style={{ color: "green", marginBottom: "5px" }}>
                 {line}
@@ -61,9 +61,9 @@ export default function ContentCheckPanel() {
       )}
 
       {extra.length > 0 && (
-        <div className="mb-3">
+        <div style={{ marginBottom: "20px" }}>
           <label><strong>❌ Extra Content (in Website only):</strong></label>
-          <div className="p-2 bg-light border rounded border-danger">
+          <div style={{ padding: "10px", backgroundColor: "#f0f0f0", border: "2px solid #ff6b6b", borderRadius: "4px" }}>
             {extra.map((line, i) => (
               <div key={i} style={{ color: "red", marginBottom: "5px" }}>
                 {line}
@@ -74,14 +74,13 @@ export default function ContentCheckPanel() {
       )}
 
       {missing.length > 0 && (
-        <div className="mb-3">
+        <div style={{ marginBottom: "20px" }}>
           <label><strong>❌ Missing Content (from Website):</strong></label>
           <textarea
-            className="form-control"
+            style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ddd", fontFamily: "Arial", color: "red", fontWeight: "bold" }}
             rows="4"
             value={missing.join("\n")}
             readOnly
-            style={{ color: "red", fontWeight: "bold" }}
           />
         </div>
       )}
